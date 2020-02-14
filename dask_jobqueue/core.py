@@ -194,9 +194,9 @@ class Job(ProcessInterface, abc.ABC):
 
         if interface:
             extra = extra + ["--interface", interface]
-            kwargs.setdefault("host", get_ip_interface(interface))
-        else:
-            kwargs.setdefault("host", "")
+#            kwargs.setdefault("host", get_ip_interface(interface)) # which host is set here? the scheduler's? seems like the wrong place for doing this to me
+#        else:
+#            kwargs.setdefault("host", "")
 
         # Keep information on process, cores, and memory, for use in subclasses
         self.worker_memory = parse_bytes(memory) if memory is not None else None
@@ -423,14 +423,19 @@ class JobQueueCluster(SpecCluster):
 
         if config_name:
             if interface is None:
-                interface = dask.config.get("jobqueue.%s.interface" % config_name)
+                interface = dask.config.get("jobqueue.%s.interface" % config_name) # we would want a scheduler specific interface here, not the one from the worker's scope?
 
         scheduler = {
             "cls": Scheduler,  # Use local scheduler for now
             "options": {
                 "protocol": protocol,
-                "interface": interface,
-                "host": host,
+                #"interface": interface, # drop this?
+                "interface": None,
+                #"host": host,
+                # dirty temporary hacks...
+                "host": None, # uses the existing eth1, but workers can't connect
+                "host": '10.11.30.170', # explicitely use eth0@juwels00, doesn't work either
+                "host": '10.11.159.190', # use ib1@juwels00, this works!
                 "dashboard_address": dashboard_address,
                 "security": security,
             },
