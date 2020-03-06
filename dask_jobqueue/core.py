@@ -206,9 +206,6 @@ class Job(ProcessInterface, abc.ABC):
 
         if interface:
             extra = extra + ["--interface", interface]
-            kwargs.setdefault("host", get_ip_interface(interface))
-        else:
-            kwargs.setdefault("host", "")
 
         # Keep information on process, cores, and memory, for use in subclasses
         self.worker_memory = parse_bytes(memory) if memory is not None else None
